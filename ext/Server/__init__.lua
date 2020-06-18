@@ -5,10 +5,6 @@ function FairRoundStart:__init()
 	self:RegisterVars()
 	self:RegisterEvents()
 
-	
-	
-
-
 	Events:Subscribe('Player:Chat', function(player, recipientMask, message)
 	    if message == "GO" then
 	    	self:StartRound()
@@ -23,14 +19,9 @@ function FairRoundStart:RegisterVars()
 end
 
 function FairRoundStart:RegisterEvents()
-	-- Events:Subscribe('Player:Respawn', self, self.onPlayerRespawn)
-	self.movementBlocker = Events:Subscribe('Player:UpdateInput', function(player, dt)
-	  	player.input:SetLevel(EntryInputActionEnum.EIAThrottle, 0)
-	  	player.input:SetLevel(EntryInputActionEnum.EIAStrafe, 0)
-	  	if not self.roundStarted then
-			self:DisableInput(player, false)
-		end
-	end)
+	Events:Subscribe('Player:Respawn', self, self.onPlayerRespawn)
+
+	Events:Subscribe('Level:Loaded', self, self.onLevelLoaded)
 end
 
 function FairRoundStart:DisableInput(player, newbool)
@@ -40,6 +31,19 @@ function FairRoundStart:DisableInput(player, newbool)
 	player:EnableInput(0, newbool) -- EIAThrottle
 	player:EnableInput(35, newbool) -- EIAInteract
 	player:EnableInput(31, newbool) -- EIAThrowGrenade
+end
+
+function FairRoundStart:onLevelLoaded(levelName, gameMode, round, roundsPerMap)
+	self.roundStarted = false
+	self.movementBlocker = Events:Subscribe('Player:UpdateInput', self, self.blockMovement)
+	NetEvents:Broadcast("FairRoundStart:Reset")
+	NetEvents:Broadcast("FairRoundStart:UpdateUI", 0, 0, 32, 32)
+end
+
+function FairRoundStart:blockMovement(player, dt)
+	player.input:SetLevel(EntryInputActionEnum.EIAThrottle, 0)
+	player.input:SetLevel(EntryInputActionEnum.EIAStrafe, 0)
+	self:DisableInput(player, false)
 end
 
 function FairRoundStart:StartRound()
@@ -56,8 +60,10 @@ end
 
 function FairRoundStart:onPlayerRespawn(player)
 	if not self.roundStarted then
-		ChatManager:SendMessage("Round has not started yet, not enough players have joined")
-		self:DisableInput(player, false)
+		--ChatManager:SendMessage("Round has not started yet, not enough players have joined")
+		--self:DisableInput(player, false)
+		NetEvents:Broadcast("FairRoundStart:UpdateUI", 5, 6, 32, 32)
+		print("FairRoundStart:UpdateUI")
 	end
 end
 

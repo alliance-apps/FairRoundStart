@@ -1,4 +1,4 @@
-function addMedics(medics) {
+function updateText(medics) {
 	// Just in case we make sure the medics param is an array, not an object. This happens when a lua table is empty, as the JSON encoder doesn't 
 	// know if the table is supposed to be an array or an object.
 	if (typeof medics == 'object') {
@@ -6,12 +6,12 @@ function addMedics(medics) {
 	}
 
 	// Clear previous elements first.
-	removeAllMedics();
+	removeText();
 	
 	// Now we want to create an element for each medic in the array.
 	for (let j = 0; j < medics.length; j++) {
 		let medic = medics[j];
-		let li = '<li class="nameBox" id="item' + j + '"><label>' + medic.name + '</label></li>';
+		let li = '<li class="nameBox" id="item' + j + '"><label>' + medic + '</label></li>';
 		// Attach it to the playerList element.
 		let el = document.getElementById("playerList"); 
 		el.innerHTML += li;
@@ -19,7 +19,7 @@ function addMedics(medics) {
 }
 
 // Clears all player info elements.
-function removeAllMedics(){
+function removeText(){
 	let el = document.getElementById("playerList"); 
 	el.innerHTML = '';
 }
@@ -40,6 +40,7 @@ window.onresize = function(event) {
 };
 
 window.onload = function(event) {
-	addMedics([{name: 'US: Waiting for 3 more... (13/32)'}, {name: 'RU: Waiting for 5 more... (11/32)'}])
+	WebUI.Call('Hide')
+	updateText(['Error communicating with VEXT', 'WebUI not initialized'])
 	fontsize();
 };

@@ -13,13 +13,27 @@ function FairRoundStart:RegisterVars()
 end
 
 function FairRoundStart:RegisterEvents()
-	Events:Subscribe('Level:Loaded', function(levelName, gameMode)
+	Events:Subscribe('Extension:Loaded', function(levelName, gameMode)
 	    WebUI:Init()
+	    WebUI:ExecuteJS("updateText(['Error', 'Something is wrong lol'])")
 	end)
 	self.movementBlocker = Events:Subscribe('Player:Respawn', self, self.onPlayerRespawn)
+	Events:Subscribe('Level:Loaded', function(player)
+		WebUI:ExecuteJS("WebUI.Call('Show')")
+	end)
 	NetEvents:Subscribe('FairRoundStart:Start', function()
 		self.movementBlocker:Unsubscribe()
 		self:DisableInput(PlayerManager:GetLocalPlayer(), true)
+		WebUI:ExecuteJS("WebUI.Call('Hide')")
+	end)
+	Events:Subscribe('Level:Destroy', function()
+	    WebUI:ExecuteJS("WebUI.Call('Hide')")
+	end)
+	NetEvents:Subscribe('FairRoundStart:UpdateUI', function(team1current, team2current, team1min, team2min)
+		WebUI:ExecuteJS("updateText(['US: Waiting for ".. (team1min - team1current) .." more... (".. team1current .."/".. team1min ..")', 'RU: Waiting for ".. (team2min - team2current) .." more... (".. team2current .."/".. team2min ..")'])")
+	end)
+	NetEvents:Subscribe('FairRoundStart:Reset', function(team1current, team2current, team1min, team2min)
+		self.roundStarted = false
 	end)
 end
 
@@ -34,9 +48,9 @@ end
 
 
 function FairRoundStart:onPlayerRespawn(player)
-	self:DisableInput(player, false)
-	WebUI:ExecuteJS("WebUI.Call('Show')")
-	WebUI:ExecuteJS('app.$data.message = "<strong>FairRoundStart</strong><br>Waiting for 50% of players to spawn...<br>RU: 8/16<br>US: 13/15";')
+	if not self.roundStarted then
+		self:DisableInput(player, false)
+	end
 end
 
 
