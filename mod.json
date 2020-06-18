@@ -1,0 +1,9 @@
+{
+	"Name": "FairRoundStart",
+	"Authors": ["cat24max", "AllianceApps"],
+	"Description": "Blocks player movement until 50% of players have spawned",
+	"URL": "",
+	"Version": "0",
+	"HasWebUI": true,
+	"HasVeniceEXT": true
+}
